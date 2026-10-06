@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Localhost</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#AA0000">
+  
+  <style>
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      color: white;
+      background-color: #007bff;
+      border: none;
+      border-radius: 4px;
+    }
+    .btn-install {
+      background-color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <h1>PWA on Localhost!</h1>
+  
+  <!-- Tombol navigasi ke halaman1.html -->
+  <a href="halaman1.html" class="btn">Open 1</a>
+
+  <!-- Tombol Install PWA -->
+  <button id="btnInstall" class="btn btn-install" style="display: none;">
+    Install Aplikasi
+  </button>
+
+  <script>
+    // 1. Daftarkan Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((reg) => console.log('Service Worker berhasil didaftarkan:', reg.scope))
+          .catch((err) => console.error('Pendaftaran Service Worker gagal:', err));
+      });
+    }
+
+    // 2. Event prompt install PWA
+    let deferredPrompt;
+    const btnInstall = document.getElementById('btnInstall');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      btnInstall.style.display = 'inline-block';
+    });
+
+    btnInstall.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Pilihan user: ${outcome}`);
+        deferredPrompt = null;
+        btnInstall.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
