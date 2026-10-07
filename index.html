@@ -1,71 +1,399 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PWA Localhost</title>
-  
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#AA0000">
-  
-  <style>
-    .btn {
-      display: inline-block;
-      padding: 10px 20px;
-      margin: 5px;
-      font-size: 16px;
-      cursor: pointer;
-      text-decoration: none;
-      color: white;
-      background-color: #007bff;
-      border: none;
-      border-radius: 4px;
-    }
-    .btn-install {
-      background-color: #28a745;
-    }
-  </style>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>PWA Localhost</title>
+
+    <link
+        rel="manifest"
+        href="./manifest.json"
+    >
+
+    <meta
+        name="theme-color"
+        content="#AA0000"
+    >
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .btn-install {
+            background-color: #28a745;
+        }
+
+        .btn-update {
+            background-color: #ff9800;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f2f2f2;
+            border-radius: 4px;
+        }
+
+    </style>
+
 </head>
+
+
 <body>
-  <h1>PWA on Localhost!</h1>
-  
-  <!-- Tombol navigasi ke halaman1.html -->
-  <a href="halaman1.html" class="btn">Open 1</a>
 
-  <!-- Tombol Install PWA -->
-  <button id="btnInstall" class="btn btn-install" style="display: none;">
-    Install Aplikasi
-  </button>
+    <h1>PWA on Localhost!</h1>
 
-  <script>
-    // 1. Daftarkan Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then((reg) => console.log('Service Worker berhasil didaftarkan:', reg.scope))
-          .catch((err) => console.error('Pendaftaran Service Worker gagal:', err));
-      });
+
+    <!-- Navigasi -->
+    <a
+        href="./halaman1.html"
+        class="btn"
+    >
+        Open 1
+    </a>
+
+
+    <!-- Install PWA -->
+    <button
+        id="btnInstall"
+        class="btn btn-install"
+        style="display:none;"
+    >
+        📲 Install Aplikasi
+    </button>
+
+
+    <!-- Update PWA -->
+    <button
+        id="btnUpdate"
+        class="btn btn-update"
+        style="display:none;"
+    >
+        🔄 Update Aplikasi
+    </button>
+
+
+    <!-- Status -->
+    <div
+        id="status"
+        class="status"
+    >
+        Mengecek aplikasi...
+    </div>
+
+
+<script>
+
+/* =========================================================
+   GLOBAL
+========================================================= */
+
+let deferredPrompt = null;
+let newWorker = null;
+
+
+/* =========================================================
+   ELEMENT
+========================================================= */
+
+const btnInstall =
+    document.getElementById('btnInstall');
+
+const btnUpdate =
+    document.getElementById('btnUpdate');
+
+const status =
+    document.getElementById('status');
+
+
+/* =========================================================
+   SERVICE WORKER
+========================================================= */
+
+if ('serviceWorker' in navigator) {
+
+    window.addEventListener('load', async () => {
+
+        try {
+
+            const registration =
+                await navigator.serviceWorker.register('./sw.js');
+
+            console.log(
+                'Service Worker berhasil didaftarkan:',
+                registration.scope
+            );
+
+            status.textContent =
+                'Service Worker aktif.';
+
+            /*
+             * Cek apakah browser menemukan
+             * Service Worker versi baru.
+             */
+            registration.addEventListener(
+                'updatefound',
+                () => {
+
+                    console.log(
+                        'Service Worker baru ditemukan.'
+                    );
+
+                    const worker =
+                        registration.installing;
+
+                    if (!worker) {
+                        return;
+                    }
+
+                    worker.addEventListener(
+                        'statechange',
+                        () => {
+
+                            console.log(
+                                'SW state:',
+                                worker.state
+                            );
+
+                            /*
+                             * installed + sudah ada controller
+                             * berarti ini UPDATE,
+                             * bukan instalasi pertama.
+                             */
+                            if (
+                                worker.state === 'installed' &&
+                                navigator.serviceWorker.controller
+                            ) {
+
+                                newWorker = worker;
+
+                                btnUpdate.style.display =
+                                    'inline-block';
+
+                                status.textContent =
+                                    '🟡 Versi baru tersedia.';
+
+                                console.log(
+                                    'Versi baru tersedia.'
+                                );
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+
+            /*
+             * Cek update ketika halaman dibuka.
+             */
+            registration.update();
+
+
+        } catch (error) {
+
+            console.error(
+                'Pendaftaran Service Worker gagal:',
+                error
+            );
+
+            status.textContent =
+                '❌ Service Worker gagal didaftarkan.';
+
+        }
+
+    });
+
+
+    /*
+     * Ketika Service Worker baru mengambil
+     * kontrol halaman, reload halaman.
+     */
+    navigator.serviceWorker.addEventListener(
+        'controllerchange',
+        () => {
+
+            console.log(
+                'Service Worker baru aktif.'
+            );
+
+            window.location.reload();
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   INSTALL PWA
+========================================================= */
+
+window.addEventListener(
+    'beforeinstallprompt',
+    (event) => {
+
+        console.log(
+            'PWA dapat di-install.'
+        );
+
+        /*
+         * Jangan biarkan browser langsung
+         * menampilkan prompt.
+         */
+        event.preventDefault();
+
+        deferredPrompt = event;
+
+        /*
+         * Tampilkan tombol Install.
+         */
+        btnInstall.style.display =
+            'inline-block';
+
+        status.textContent =
+            '🟢 Aplikasi siap di-install.';
+
     }
+);
 
-    // 2. Event prompt install PWA
-    let deferredPrompt;
-    const btnInstall = document.getElementById('btnInstall');
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      btnInstall.style.display = 'inline-block';
-    });
+/* =========================================================
+   BUTTON INSTALL
+========================================================= */
 
-    btnInstall.addEventListener('click', async () => {
-      if (deferredPrompt) {
+btnInstall.addEventListener(
+    'click',
+    async () => {
+
+        if (!deferredPrompt) {
+            return;
+        }
+
+        /*
+         * Tampilkan dialog install.
+         */
         deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`Pilihan user: ${outcome}`);
+
+        /*
+         * Tunggu pilihan user.
+         */
+        const {
+            outcome
+        } = await deferredPrompt.userChoice;
+
+        console.log(
+            'Pilihan user:',
+            outcome
+        );
+
+        /*
+         * Prompt hanya bisa digunakan sekali.
+         */
         deferredPrompt = null;
-        btnInstall.style.display = 'none';
-      }
-    });
-  </script>
+
+        /*
+         * Sembunyikan tombol.
+         */
+        btnInstall.style.display =
+            'none';
+
+    }
+);
+
+
+/* =========================================================
+   PWA SUDAH TER-INSTALL
+========================================================= */
+
+window.addEventListener(
+    'appinstalled',
+    () => {
+
+        console.log(
+            'PWA berhasil di-install.'
+        );
+
+        btnInstall.style.display =
+            'none';
+
+        status.textContent =
+            '🟢 Aplikasi sudah ter-install.';
+
+    }
+);
+
+
+/* =========================================================
+   BUTTON UPDATE
+========================================================= */
+
+btnUpdate.addEventListener(
+    'click',
+    () => {
+
+        if (!newWorker) {
+
+            console.log(
+                'Tidak ada Service Worker baru.'
+            );
+
+            return;
+        }
+
+        /*
+         * Minta Service Worker baru
+         * untuk langsung menjadi aktif.
+         */
+        newWorker.postMessage({
+            action: 'skipWaiting'
+        });
+
+        /*
+         * Disable tombol supaya tidak
+         * diklik berkali-kali.
+         */
+        btnUpdate.disabled = true;
+
+        btnUpdate.textContent =
+            '⏳ Updating...';
+
+        status.textContent =
+            '⏳ Meng-update aplikasi...';
+
+    }
+);
+
+</script>
+
 </body>
+
 </html>
