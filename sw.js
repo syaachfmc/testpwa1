@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pwa-cache-v2';
+const CACHE_NAME = 'pwa-cache-v3';
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
