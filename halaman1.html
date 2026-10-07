@@ -58,107 +58,135 @@
 
         function createColumns(result) {
 
-            return result.columnHeaders.map((header, index) => {
+return result.columnHeaders.map((header, index) => {
 
-                const columnType =
-                    String(result.columnTypes[index] || "")
-                        .trim()
-                        .toLowerCase();
+    const columnType =
+        String(result.columnTypes[index] || "")
+            .trim()
+            .toLowerCase();
 
 
-                // =====================================================
-                // COLUMN TYPE = LINK
-                // =====================================================
+    // =====================================================
+    // COLUMN TYPE = LINK
+    // =====================================================
 
-                if (columnType === "link") {
+    if (columnType === "link") {
 
-                    return {
+        return {
 
-                        title: header,
+            title: header,
 
-                        field: "col" + index,
+            field: "col" + index,
 
-                        headerFilter: "input",
-                        
-                        variableHeight: true,
+            headerFilter: "input",
 
-                        hozAlign: "center",
+            variableHeight: true,
 
-                        formatter: function (cell) {
+            hozAlign: "center",
 
-                            const url = cell.getValue();
+            formatter: function (cell) {
 
-                            if (!url) {
-                                return "";
-                            }
+                const url = cell.getValue();
 
-                            return `
-                                <span
-                                    class="link-icon"
-                                    title="Open link"
-                                >
-                                    📁
-                                </span>
-                            `;
-                        },
+                if (!url) {
+                    return "";
+                }
 
-                        cellClick: function (e, cell) {
+                return `
+                    <span
+                        class="link-icon"
+                        title="Open link"
+                    >
+                        📁
+                    </span>
+                `;
+            },
 
-                            const url = cell.getValue();
+            cellClick: function (e, cell) {
 
-                            if (!url) {
-                                return;
-                            }
+                const url = cell.getValue();
 
-                            // Pastikan value adalah URL
-                            if (
-                                typeof url === "string" &&
-                                (
-                                    url.startsWith("http://") ||
-                                    url.startsWith("https://")
-                                )
-                            ) {
+                if (!url) {
+                    return;
+                }
 
-                                window.open(
-                                    url,
-                                    "_blank",
-                                    "noopener,noreferrer"
-                                );
+                if (
+                    typeof url === "string" &&
+                    (
+                        url.startsWith("http://") ||
+                        url.startsWith("https://")
+                    )
+                ) {
 
-                            } else {
+                    window.open(
+                        url,
+                        "_blank",
+                        "noopener,noreferrer"
+                    );
 
-                                console.warn(
-                                    "Value bukan URL:",
-                                    url
-                                );
+                } else {
 
-                            }
-
-                        }
-
-                    };
+                    console.warn(
+                        "Value bukan URL:",
+                        url
+                    );
 
                 }
 
+            }
 
-                // =====================================================
-                // COLUMN TYPE LAIN
-                // =====================================================
+        };
 
-                return {
+    }
 
-                    title: header,
 
-                    field: "col" + index,
+    // =====================================================
+    // COLUMN TYPE LAIN
+    // =====================================================
 
-                    headerFilter: "input"
+    return {
 
-                };
+        title: header,
 
-            });
+        field: "col" + index,
+
+        headerFilter: "input",
+
+        variableHeight: true,
+
+        formatter: function (cell) {
+
+            const value = cell.getValue();
+
+            if (
+                value === null ||
+                value === undefined
+            ) {
+                return "";
+            }
+
+            const div = document.createElement("div");
+
+            // Pertahankan newline dari Google Sheet
+            div.style.whiteSpace = "pre-wrap";
+
+            // Kalau text terlalu panjang,
+            // boleh turun ke baris berikutnya
+            div.style.wordBreak = "break-word";
+
+            // Masukkan text sebagai text biasa,
+            // bukan HTML
+            div.textContent = String(value);
+
+            return div;
 
         }
 
+    };
+
+});
+
+}
 
         // =========================================================
         // Convert Data Array -> Object Tabulator
