@@ -180,6 +180,11 @@
                     // ==========================
                     // Update columns
                     // ==========================
+                    console.log("INPUT RANGE :", dataRange);
+                    console.log("JUMLAH HEADER:", result.columnHeaders.length);
+                    console.log("HEADERS:", result.columnHeaders);
+                    console.log("JUMLAH KOLOM DATA:", result.data[0]?.length);
+                    console.log("DATA BARIS 1:", result.data[0]);
 
                     await table.setColumns(columns);
 
