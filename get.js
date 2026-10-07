@@ -5,16 +5,18 @@
  * @param {string} gsheetID - Spreadsheet ID.
  * @param {string} sheetName - Nama tab.
  * @param {number} columnRow - Nomor baris header.
+ * @param {string} columnTypeRow - Nomor baris tipe kolom.
  * @param {string} dataRange - Format range data.
  * @returns {Promise<Object>} Object dengan status, error, columnHeaders, data, dan method get().
  */
-async function fetchGSheetData(webAppUrl, gsheetID, sheetName, columnRow, dataRange) {
+async function fetchGSheetData(webAppUrl, gsheetID, sheetName, columnRow, columnTypeRow, dataRange) {
     const url = new URL(webAppUrl);
     url.searchParams.append("GSheetID", gsheetID);
     url.searchParams.append("sheetName", sheetName);
     url.searchParams.append("columnRow", columnRow);
+    url.searchParams.append("columnTypeRow", columnTypeRow);
     url.searchParams.append("dataRange", dataRange);
-  
+
     try {
       // Tambahkan mode: "cors" dan redirect: "follow"
       const response = await fetch(url.toString(), {

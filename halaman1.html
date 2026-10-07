@@ -1,12 +1,8 @@
-```html
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Test GET PWA</title>
@@ -15,37 +11,15 @@
     <script src="./get.js"></script>
 
     <!-- Tabulator ONLINE -->
-    <link
-        href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css"
-        rel="stylesheet"
-    >
+    <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
 
-    <script
-        src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js">
+    <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js">
     </script>
-
     <style>
-
         html {
             background-color: rgb(250, 240, 240);
         }
-
-        body {
-            margin: 20px;
-            font-family: Arial, sans-serif;
-        }
-
-        #table {
-            margin-top: 15px;
-        }
-
-        /* Cursor untuk cell link */
-        .tabulator-cell.link-cell {
-            cursor: pointer;
-        }
-
     </style>
-
 </head>
 
 
@@ -55,12 +29,7 @@
 
     <div id="table"></div>
 
-
     <script>
-
-        // =========================================================
-        // CONFIG
-        // =========================================================
 
         const WEB_APP_URL =
             "https://script.google.com/macros/s/AKfycbxS25nr6J37T3EhgJPxS0X6XTJy4nnhsSp1HsG1SEGyEPASs70tMt010G13UXLDILnn/exec";
@@ -68,223 +37,78 @@
         const GSHEET_ID =
             "1dShkxc4N8wvekcJt8gP3XvFCqPPu6gcWdhy79YVOjmE";
 
-
-        // =========================================================
-        // TABULATOR INSTANCE
-        // =========================================================
-
+        // Simpan instance Tabulator
         let table;
 
-
-        // =========================================================
-        // CREATE COLUMNS
-        //
-        // Jika header mengandung 📁
-        // maka cell akan ditampilkan sebagai 🟨
-        // dan bisa diklik untuk membuka URL.
-        // =========================================================
-
-        function createColumns(headers) {
-
-            return headers.map((header, index) => {
-
-                // Pastikan header menjadi string
-                const headerText = String(header ?? "");
-
-                // Cek apakah header mengandung icon 📁
-                const isLinkColumn = headerText.includes("📁");
-
-
-                return {
-
-                    title: headerText,
-
-                    field: "col" + index,
-
-                    headerFilter: "input",
-
-
-                    // =================================================
-                    // KHUSUS KOLOM YANG HEADER-NYA MENGANDUNG 📁
-                    // =================================================
-
-                    ...(isLinkColumn && {
-
-                        // ---------------------------------------------
-                        // Tampilan cell
-                        // ---------------------------------------------
-
-                        formatter: function(cell) {
-
-                            const url = cell.getValue();
-
-                            // Kalau kosong
-                            if (!url) {
-                                return "";
-                            }
-
-                            // Tampilkan icon saja
-                            return "🟨";
-                        },
-
-
-                        // ---------------------------------------------
-                        // Klik cell
-                        // ---------------------------------------------
-
-                        cellClick: function(e, cell) {
-
-                            const url = cell.getValue();
-
-                            // Kalau tidak ada URL
-                            if (!url) {
-                                return;
-                            }
-
-                            // Buka URL di tab baru
-                            window.open(url, "_blank");
-
-                        },
-
-
-                        // ---------------------------------------------
-                        // Tooltip
-                        // ---------------------------------------------
-
-                        tooltip: function(e, cell) {
-
-                            const url = cell.getValue();
-
-                            if (!url) {
-                                return "";
-                            }
-
-                            return url;
-                        },
-
-
-                        // ---------------------------------------------
-                        // CSS class
-                        // ---------------------------------------------
-
-                        cssClass: "link-cell"
-
-                    })
-
-                };
-
-            });
-
-        }
-
-
-        // =========================================================
-        // CREATE TABULATOR DATA
-        // =========================================================
-
-        function createTableData(data) {
-
-            return data.map(row => {
-
-                const obj = {};
-
-                row.forEach((value, index) => {
-
-                    obj["col" + index] = value;
-
-                });
-
-                return obj;
-
-            });
-
-        }
-
-
-        // =========================================================
-        // RUN INITIAL DATA
-        // =========================================================
 
         async function runClientExample() {
 
             const result = await fetchGSheetData(
-
                 WEB_APP_URL,
-
                 GSHEET_ID,
-
                 "data",
-
+                2,
                 1,
-
                 "A2:C10"
-
             );
-
-
-            // =====================================================
-            // SUCCESS
-            // =====================================================
 
             if (result.status === "success") {
 
-                console.log(
-                    "Column Headers:",
-                    result.columnHeaders
-                );
+                console.log("Column Headers:", result.columnHeaders);
+                console.log("Raw Data Array:", result.data);
 
-                console.log(
-                    "Raw Data Array:",
-                    result.data
-                );
-
-                console.log(
-                    "Data [0][0]:",
-                    result.get(0, 0)
-                );
-
-                console.log(
-                    "Data [1][2]:",
-                    result.get(1, 2)
-                );
+                console.log("Data [0][0]:", result.get(0, 0));
+                console.log("Data [1][2]:", result.get(1, 2));
 
 
-                // =================================================
-                // CREATE COLUMNS
-                // =================================================
+                // ============================
+                // Column Tabulator
+                // ============================
 
-                const columns =
-                    createColumns(result.columnHeaders);
+                const columns = result.columnHeaders.map((header, index) => {
+
+                    return {
+                        title: header,
+                        field: "col" + index,
+                        headerFilter: "input"
+                    };
+
+                });
 
 
-                // =================================================
-                // CREATE DATA
-                // =================================================
+                // ============================
+                // Data Tabulator
+                // ============================
 
-                const tableData =
-                    createTableData(result.data);
+                const tableData = result.data.map(row => {
+
+                    const obj = {};
+
+                    row.forEach((value, index) => {
+                        obj["col" + index] = value;
+                    });
+
+                    return obj;
+
+                });
 
 
-                // =================================================
-                // CREATE TABULATOR
-                // =================================================
+                // ============================
+                // Buat Tabulator
+                // ============================
 
                 table = new Tabulator("#table", {
 
                     height: "400px",
-
                     layout: "fitDataStretch",
 
                     columns: columns,
-
                     data: tableData,
 
                     selectableRows: true,
-
                     pagination: false
 
                 });
-
 
             } else {
 
@@ -298,232 +122,121 @@
         }
 
 
-        // =========================================================
-        // REFRESH TABLE
-        // =========================================================
-
         async function refreshTable() {
 
-            const btn =
-                document.getElementById("btnRefresh");
+            const btn = document.getElementById("btnRefresh");
+            const rangeInput = document.getElementById("rangeInput");
 
-            const rangeInput =
-                document.getElementById("rangeInput");
-
-
-            const dataRange =
-                rangeInput.value.trim();
-
-
-            // =====================================================
-            // VALIDASI RANGE
-            // =====================================================
+            const dataRange = rangeInput.value.trim();
 
             if (!dataRange) {
-
                 alert("Silakan masukkan range.");
-
                 rangeInput.focus();
-
                 return;
-
             }
 
-
-            // =====================================================
-            // BUTTON LOADING
-            // =====================================================
-
             btn.disabled = true;
-
             btn.innerHTML = "⏳ Refreshing...";
-
 
             try {
 
-                // =================================================
-                // FETCH DATA
-                // =================================================
-
-                const result =
-                    await fetchGSheetData(
-
-                        WEB_APP_URL,
-
-                        GSHEET_ID,
-
-                        "data",
-
-                        1,
-
-                        dataRange
-
-                    );
-
-
-                // =================================================
-                // SUCCESS
-                // =================================================
+                const result = await fetchGSheetData(
+                    WEB_APP_URL,
+                    GSHEET_ID,
+                    "data",
+                    2,
+                    1,
+                    dataRange
+                );
 
                 if (result.status === "success") {
 
-                    console.log(
-                        "Range:",
-                        dataRange
-                    );
+                    console.log("Range:", dataRange);
+                    console.log("Headers:", result.columnHeaders);
+                    console.log("Data:", result.data);
 
-                    console.log(
-                        "Headers:",
-                        result.columnHeaders
-                    );
+                    // ==========================
+                    // Buat ulang columns
+                    // ==========================
 
-                    console.log(
-                        "Data:",
-                        result.data
-                    );
+                    const columns = result.columnHeaders.map((header, index) => {
 
+                        return {
+                            title: header,
+                            field: "col" + index,
+                            headerFilter: "input"
+                        };
 
-                    // =================================================
-                    // CREATE COLUMNS
-                    // =================================================
+                    });
 
-                    const columns =
-                        createColumns(
-                            result.columnHeaders
-                        );
+                    // ==========================
+                    // Buat data object
+                    // ==========================
 
+                    const tableData = result.data.map(row => {
 
-                    // =================================================
-                    // CREATE DATA
-                    // =================================================
+                        const obj = {};
 
-                    const tableData =
-                        createTableData(
-                            result.data
-                        );
+                        row.forEach((value, index) => {
+                            obj["col" + index] = value;
+                        });
 
+                        return obj;
 
-                    // =================================================
-                    // DEBUG
-                    // =================================================
+                    });
 
-                    console.log(
-                        "INPUT RANGE :",
-                        dataRange
-                    );
-
-                    console.log(
-                        "JUMLAH HEADER:",
-                        result.columnHeaders.length
-                    );
-
-                    console.log(
-                        "HEADERS:",
-                        result.columnHeaders
-                    );
-
-                    console.log(
-                        "JUMLAH KOLOM DATA:",
-                        result.data[0]?.length
-                    );
-
-                    console.log(
-                        "DATA BARIS 1:",
-                        result.data[0]
-                    );
-
-
-                    // =================================================
-                    // UPDATE COLUMNS
-                    // =================================================
+                    // ==========================
+                    // Update columns
+                    // ==========================
+                    console.log("INPUT RANGE :", dataRange);
+                    console.log("JUMLAH HEADER:", result.columnHeaders.length);
+                    console.log("HEADERS:", result.columnHeaders);
+                    console.log("JUMLAH KOLOM DATA:", result.data[0]?.length);
+                    console.log("DATA BARIS 1:", result.data[0]);
 
                     await table.setColumns(columns);
 
-
-                    // =================================================
-                    // UPDATE DATA
-                    // =================================================
+                    // ==========================
+                    // Update data
+                    // ==========================
 
                     await table.replaceData(tableData);
 
-
                 } else {
 
-                    console.error(
-                        "Gagal mengambil data:",
-                        result.error
-                    );
+                    console.error("Gagal mengambil data:", result.error);
 
-                    alert(
-                        "Gagal mengambil data: " +
-                        result.error
-                    );
-
+                    alert("Gagal mengambil data: " + result.error);
                 }
-
 
             } catch (error) {
 
-                console.error(
-                    "Refresh error:",
-                    error
-                );
+                console.error("Refresh error:", error);
 
-                alert(
-                    "Terjadi error saat refresh."
-                );
-
+                alert("Terjadi error saat refresh.");
 
             } finally {
 
-                // =====================================================
-                // RESTORE BUTTON
-                // =====================================================
-
                 btn.disabled = false;
-
                 btn.innerHTML = "🔄 Refresh";
 
             }
-
         }
-
-
-        // =========================================================
-        // RUN
-        // =========================================================
 
         runClientExample();
 
     </script>
 
 
-    <!-- =========================================================
-         RANGE INPUT
-         ========================================================= -->
 
-    <label for="rangeInput">
-        Range:
-    </label>
+    <label for="rangeInput">Range:</label>
 
+    <input type="text" id="rangeInput" value="A2:C10" placeholder="Contoh: A2:C10">
 
-    <input
-        type="text"
-        id="rangeInput"
-        value="A2:C10"
-        placeholder="Contoh: A2:C10"
-    >
-
-
-    <button
-        id="btnRefresh"
-        onclick="refreshTable()"
-    >
+    <button id="btnRefresh" onclick="refreshTable()">
         🔄 Refresh
     </button>
-
 
 </body>
 
 </html>
-```
