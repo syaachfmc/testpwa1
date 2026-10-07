@@ -79,3 +79,27 @@ async function fetchGSheetData(webAppUrl, gsheetID, sheetName, columnRow, dataRa
   
     return safeObj;
   }
+
+  async function refreshTable() {
+    const result = await fetchGSheetData(
+      WEB_APP_URL,
+      GSHEET_ID,
+      "data",
+      1,
+      "A2:C10"
+    );
+  
+    if (result.status === "success") {
+      const tableData = result.data.map(row => {
+        const obj = {};
+  
+        row.forEach((value, index) => {
+          obj["col" + index] = value;
+        });
+  
+        return obj;
+      });
+  
+      table.replaceData(tableData);
+    }
+  }
