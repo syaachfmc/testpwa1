@@ -117,75 +117,98 @@
 
         async function refreshTable() {
 
-const btn = document.getElementById("btnRefresh");
-const rangeInput = document.getElementById("rangeInput");
+            const btn = document.getElementById("btnRefresh");
+            const rangeInput = document.getElementById("rangeInput");
 
-// Ambil range dari input user
-const dataRange = rangeInput.value.trim();
+            const dataRange = rangeInput.value.trim();
 
-// Validasi sederhana
-if (!dataRange) {
-    alert("Silakan masukkan range terlebih dahulu.");
-    rangeInput.focus();
-    return;
-}
+            if (!dataRange) {
+                alert("Silakan masukkan range.");
+                rangeInput.focus();
+                return;
+            }
 
-// Ubah tombol
-btn.disabled = true;
-btn.innerHTML = "⏳ Refreshing...";
+            btn.disabled = true;
+            btn.innerHTML = "⏳ Refreshing...";
 
-try {
+            try {
 
-    const result = await fetchGSheetData(
-        WEB_APP_URL,
-        GSHEET_ID,
-        "data",
-        1,
-        dataRange
-    );
+                const result = await fetchGSheetData(
+                    WEB_APP_URL,
+                    GSHEET_ID,
+                    "data",
+                    1,
+                    dataRange
+                );
 
-    if (result.status === "success") {
+                if (result.status === "success") {
 
-        console.log("Range:", dataRange);
-        console.log("Headers:", result.columnHeaders);
-        console.log("Data:", result.data);
+                    console.log("Range:", dataRange);
+                    console.log("Headers:", result.columnHeaders);
+                    console.log("Data:", result.data);
 
-        const tableData = result.data.map(row => {
+                    // ==========================
+                    // Buat ulang columns
+                    // ==========================
 
-            const obj = {};
+                    const columns = result.columnHeaders.map((header, index) => {
 
-            row.forEach((value, index) => {
-                obj["col" + index] = value;
-            });
+                        return {
+                            title: header,
+                            field: "col" + index,
+                            headerFilter: "input"
+                        };
 
-            return obj;
-        });
+                    });
 
-        // Update data Tabulator
-        table.replaceData(tableData);
+                    // ==========================
+                    // Buat data object
+                    // ==========================
 
-    } else {
+                    const tableData = result.data.map(row => {
 
-        console.error(
-            "Gagal mengambil data:",
-            result.error
-        );
+                        const obj = {};
 
-        alert("Gagal mengambil data: " + result.error);
-    }
+                        row.forEach((value, index) => {
+                            obj["col" + index] = value;
+                        });
 
-} catch (error) {
+                        return obj;
 
-    console.error("Refresh error:", error);
+                    });
 
-    alert("Terjadi error saat mengambil data.");
+                    // ==========================
+                    // Update columns
+                    // ==========================
 
-} finally {
+                    await table.setColumns(columns);
 
-    btn.disabled = false;
-    btn.innerHTML = "🔄 Refresh";
-}
-}
+                    // ==========================
+                    // Update data
+                    // ==========================
+
+                    await table.replaceData(tableData);
+
+                } else {
+
+                    console.error("Gagal mengambil data:", result.error);
+
+                    alert("Gagal mengambil data: " + result.error);
+                }
+
+            } catch (error) {
+
+                console.error("Refresh error:", error);
+
+                alert("Terjadi error saat refresh.");
+
+            } finally {
+
+                btn.disabled = false;
+                btn.innerHTML = "🔄 Refresh";
+
+            }
+        }
 
         runClientExample();
 
@@ -193,18 +216,13 @@ try {
 
 
 
-<label for="rangeInput">Range:</label>
+    <label for="rangeInput">Range:</label>
 
-<input
-    type="text"
-    id="rangeInput"
-    value="A2:C10"
-    placeholder="Contoh: A2:C10"
->
+    <input type="text" id="rangeInput" value="A2:C10" placeholder="Contoh: A2:C10">
 
-<button id="btnRefresh" onclick="refreshTable()">
-    🔄 Refresh
-</button>
+    <button id="btnRefresh" onclick="refreshTable()">
+        🔄 Refresh
+    </button>
 
 </body>
 
