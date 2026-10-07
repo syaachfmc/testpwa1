@@ -48,13 +48,14 @@
                 GSHEET_ID,
                 "data",
                 2,
-                1,
+                1,                
                 "A3:CZ10"
             );
 
             if (result.status === "success") {
 
                 console.log("Column Headers:", result.columnHeaders);
+                console.log("Column Headers:", result.columnTypes);                
                 console.log("Raw Data Array:", result.data);
 
                 console.log("Data [0][0]:", result.get(0, 0));

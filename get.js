@@ -30,6 +30,7 @@ async function fetchGSheetData(webAppUrl, gsheetID, sheetName, columnRow, column
           status: "error",
           error: `HTTP Error ${response.status}: ${response.statusText}`,
           columnHeaders: [],
+          columnTypes: [],
           data: []
         });
       }
@@ -42,6 +43,7 @@ async function fetchGSheetData(webAppUrl, gsheetID, sheetName, columnRow, column
         status: "error",
         error: "Gagal terhubung ke API: " + err.message,
         columnHeaders: [],
+        columnTypes: [],
         data: []
       });
     }
@@ -55,6 +57,7 @@ async function fetchGSheetData(webAppUrl, gsheetID, sheetName, columnRow, column
       status: obj && obj.status ? obj.status : "error",
       error: obj && obj.error !== undefined ? obj.error : "Unknown client error",
       columnHeaders: Array.isArray(obj && obj.columnHeaders) ? obj.columnHeaders : [],
+      columnTypes: Array.isArray(obj && obj.columnTypes) ? obj.columnTypes : [],      
       data: Array.isArray(obj && obj.data) ? obj.data : []
     };
   
