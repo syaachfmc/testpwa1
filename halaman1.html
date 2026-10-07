@@ -1,1 +1,134 @@
-Page 1
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+        <title>Test GET PWA</title>
+      
+        <!-- get.js -->
+        <script src="./get.js"></script>
+      
+        <!-- Tabulator ONLINE -->
+        <link
+          href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css"
+          rel="stylesheet">
+      
+        <script
+          src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js">
+        </script>
+      </head>
+
+<body>
+
+  <h3>Data Google Sheet</h3>
+
+  <div id="table"></div>
+
+  <script>
+
+    async function runClientExample() {
+
+      const WEB_APP_URL =
+        "https://script.google.com/macros/s/AKfycbxS25nr6J37T3EhgJPxS0X6XTJy4nnhsSp1HsG1SEGyEPASs70tMt010G13UXLDILnn/exec";
+
+      const GSHEET_ID =
+        "1dShkxc4N8wvekcJt8gP3XvFCqPPu6gcWdhy79YVOjmE";
+
+
+      // Ambil data dari Google Sheet
+      const result = await fetchGSheetData(
+        WEB_APP_URL,
+        GSHEET_ID,
+        "data",
+        1,
+        "A2:C10"
+      );
+
+
+      if (result.status === "success") {
+
+        console.log("Column Headers:", result.columnHeaders);
+        console.log("Raw Data Array:", result.data);
+
+        console.log("Data [0][0]:", result.get(0, 0));
+        console.log("Data [1][2]:", result.get(1, 2));
+
+
+        // ==========================================
+        // Ubah header Google Sheet menjadi column Tabulator
+        // ==========================================
+
+        const columns = result.columnHeaders.map((header, index) => {
+
+          return {
+            title: header,
+            field: "col" + index,
+            headerFilter: "input"
+          };
+
+        });
+
+
+        // ==========================================
+        // Ubah array Google Sheet menjadi object
+        // ==========================================
+
+        const tableData = result.data.map(row => {
+
+          const obj = {};
+
+          row.forEach((value, index) => {
+
+            obj["col" + index] = value;
+
+          });
+
+          return obj;
+
+        });
+
+
+        console.log("Tabulator Columns:", columns);
+        console.log("Tabulator Data:", tableData);
+
+
+        // ==========================================
+        // Buat Tabulator
+        // ==========================================
+
+        new Tabulator("#table", {
+
+          height: "400px",
+
+          layout: "fitDataStretch",
+
+          columns: columns,
+
+          data: tableData,
+
+          selectableRows: true,
+
+          pagination: false
+
+        });
+
+
+      } else {
+
+        console.error(
+          "Gagal mengambil data:",
+          result.error
+        );
+
+      }
+
+    }
+
+
+    runClientExample();
+
+  </script>
+
+</body>
+</html>
