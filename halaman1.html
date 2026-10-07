@@ -117,59 +117,75 @@
 
         async function refreshTable() {
 
-            const btn = document.getElementById("btnRefresh");
+const btn = document.getElementById("btnRefresh");
+const rangeInput = document.getElementById("rangeInput");
 
-            // Ubah tampilan tombol
-            btn.disabled = true;
-            btn.innerHTML = "⏳ Refreshing...";
+// Ambil range dari input user
+const dataRange = rangeInput.value.trim();
 
-            try {
+// Validasi sederhana
+if (!dataRange) {
+    alert("Silakan masukkan range terlebih dahulu.");
+    rangeInput.focus();
+    return;
+}
 
-                const result = await fetchGSheetData(
-                    WEB_APP_URL,
-                    GSHEET_ID,
-                    "data",
-                    1,
-                    "A2:C10"
-                );
+// Ubah tombol
+btn.disabled = true;
+btn.innerHTML = "⏳ Refreshing...";
 
-                if (result.status === "success") {
+try {
 
-                    const tableData = result.data.map(row => {
+    const result = await fetchGSheetData(
+        WEB_APP_URL,
+        GSHEET_ID,
+        "data",
+        1,
+        dataRange
+    );
 
-                        const obj = {};
+    if (result.status === "success") {
 
-                        row.forEach((value, index) => {
-                            obj["col" + index] = value;
-                        });
+        console.log("Range:", dataRange);
+        console.log("Headers:", result.columnHeaders);
+        console.log("Data:", result.data);
 
-                        return obj;
+        const tableData = result.data.map(row => {
 
-                    });
+            const obj = {};
 
-                    table.replaceData(tableData);
+            row.forEach((value, index) => {
+                obj["col" + index] = value;
+            });
 
-                } else {
+            return obj;
+        });
 
-                    console.error(
-                        "Gagal mengambil data:",
-                        result.error
-                    );
+        // Update data Tabulator
+        table.replaceData(tableData);
 
-                }
+    } else {
 
-            } catch (error) {
+        console.error(
+            "Gagal mengambil data:",
+            result.error
+        );
 
-                console.error("Refresh error:", error);
+        alert("Gagal mengambil data: " + result.error);
+    }
 
-            } finally {
+} catch (error) {
 
-                // Kembalikan tombol
-                btn.disabled = false;
-                btn.innerHTML = "🔄 Refresh";
+    console.error("Refresh error:", error);
 
-            }
-        }
+    alert("Terjadi error saat mengambil data.");
+
+} finally {
+
+    btn.disabled = false;
+    btn.innerHTML = "🔄 Refresh";
+}
+}
 
         runClientExample();
 
@@ -177,9 +193,18 @@
 
 
 
-    <button id="btnRefresh" onclick="refreshTable()">
-        🔄 Refresh
-    </button>
+<label for="rangeInput">Range:</label>
+
+<input
+    type="text"
+    id="rangeInput"
+    value="A2:C10"
+    placeholder="Contoh: A2:C10"
+>
+
+<button id="btnRefresh" onclick="refreshTable()">
+    🔄 Refresh
+</button>
 
 </body>
 
