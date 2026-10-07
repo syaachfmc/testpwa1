@@ -7,7 +7,7 @@
  * @param {number} columnRow - Nomor baris header.
  * @param {string} columnTypeRow - Nomor baris tipe kolom.
  * @param {string} dataRange - Format range data.
- * @returns {Promise<Object>} Object dengan status, error, columnHeaders, data, dan method get().
+ * @returns {Promise<Object>} Object dengan status, error, columnHeaders, columnTypeRow, data, dan method get().
  */
 async function fetchGSheetData(webAppUrl, gsheetID, sheetName, columnRow, columnTypeRow, dataRange) {
     const url = new URL(webAppUrl);

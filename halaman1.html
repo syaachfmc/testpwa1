@@ -13,11 +13,20 @@
     <!-- Tabulator ONLINE -->
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
 
-    <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js">
-    </script>
+    <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+
     <style>
         html {
             background-color: rgb(250, 240, 240);
+        }
+
+        #table {
+            margin-top: 10px;
+        }
+
+        .link-icon {
+            cursor: pointer;
+            font-size: 20px;
         }
     </style>
 </head>
@@ -29,6 +38,7 @@
 
     <div id="table"></div>
 
+
     <script>
 
         const WEB_APP_URL =
@@ -37,9 +47,145 @@
         const GSHEET_ID =
             "1dShkxc4N8wvekcJt8gP3XvFCqPPu6gcWdhy79YVOjmE";
 
+
         // Simpan instance Tabulator
         let table;
 
+
+        // =========================================================
+        // Buat Column Definition
+        // =========================================================
+
+        function createColumns(result) {
+
+            return result.columnHeaders.map((header, index) => {
+
+                const columnType =
+                    String(result.columnTypes[index] || "")
+                        .trim()
+                        .toLowerCase();
+
+
+                // =====================================================
+                // COLUMN TYPE = LINK
+                // =====================================================
+
+                if (columnType === "link") {
+
+                    return {
+
+                        title: header,
+
+                        field: "col" + index,
+
+                        headerFilter: "input",
+                        
+                        variableHeight: true,
+
+                        hozAlign: "center",
+
+                        formatter: function (cell) {
+
+                            const url = cell.getValue();
+
+                            if (!url) {
+                                return "";
+                            }
+
+                            return `
+                                <span
+                                    class="link-icon"
+                                    title="Open link"
+                                >
+                                    📁
+                                </span>
+                            `;
+                        },
+
+                        cellClick: function (e, cell) {
+
+                            const url = cell.getValue();
+
+                            if (!url) {
+                                return;
+                            }
+
+                            // Pastikan value adalah URL
+                            if (
+                                typeof url === "string" &&
+                                (
+                                    url.startsWith("http://") ||
+                                    url.startsWith("https://")
+                                )
+                            ) {
+
+                                window.open(
+                                    url,
+                                    "_blank",
+                                    "noopener,noreferrer"
+                                );
+
+                            } else {
+
+                                console.warn(
+                                    "Value bukan URL:",
+                                    url
+                                );
+
+                            }
+
+                        }
+
+                    };
+
+                }
+
+
+                // =====================================================
+                // COLUMN TYPE LAIN
+                // =====================================================
+
+                return {
+
+                    title: header,
+
+                    field: "col" + index,
+
+                    headerFilter: "input"
+
+                };
+
+            });
+
+        }
+
+
+        // =========================================================
+        // Convert Data Array -> Object Tabulator
+        // =========================================================
+
+        function createTableData(data) {
+
+            return data.map(row => {
+
+                const obj = {};
+
+                row.forEach((value, index) => {
+
+                    obj["col" + index] = value;
+
+                });
+
+                return obj;
+
+            });
+
+        }
+
+
+        // =========================================================
+        // LOAD DATA PERTAMA
+        // =========================================================
 
         async function runClientExample() {
 
@@ -48,68 +194,74 @@
                 GSHEET_ID,
                 "data",
                 2,
-                1,                
+                1,
                 "A3:CZ10"
             );
 
+
             if (result.status === "success") {
 
-                console.log("Column Headers:", result.columnHeaders);
-                console.log("Column Headers:", result.columnTypes);                
-                console.log("Raw Data Array:", result.data);
+                console.log(
+                    "Column Headers:",
+                    result.columnHeaders
+                );
 
-                console.log("Data [0][0]:", result.get(0, 0));
-                console.log("Data [1][2]:", result.get(1, 2));
+                console.log(
+                    "Column Types:",
+                    result.columnTypes
+                );
+
+                console.log(
+                    "Raw Data Array:",
+                    result.data
+                );
+
+                console.log(
+                    "Data [0][0]:",
+                    result.get(0, 0)
+                );
+
+                console.log(
+                    "Data [1][2]:",
+                    result.get(1, 2)
+                );
 
 
-                // ============================
+                // =================================================
                 // Column Tabulator
-                // ============================
+                // =================================================
 
-                const columns = result.columnHeaders.map((header, index) => {
-
-                    return {
-                        title: header,
-                        field: "col" + index,
-                        headerFilter: "input"
-                    };
-
-                });
+                const columns = createColumns(result);
 
 
-                // ============================
+                // =================================================
                 // Data Tabulator
-                // ============================
+                // =================================================
 
-                const tableData = result.data.map(row => {
-
-                    const obj = {};
-
-                    row.forEach((value, index) => {
-                        obj["col" + index] = value;
-                    });
-
-                    return obj;
-
-                });
+                const tableData =
+                    createTableData(result.data);
 
 
-                // ============================
+                // =================================================
                 // Buat Tabulator
-                // ============================
+                // =================================================
 
                 table = new Tabulator("#table", {
 
                     height: "400px",
+
                     layout: "fitDataStretch",
 
                     columns: columns,
+
                     data: tableData,
 
                     selectableRows: true,
+
                     pagination: false
 
                 });
+
 
             } else {
 
@@ -123,21 +275,38 @@
         }
 
 
+        // =========================================================
+        // REFRESH TABLE
+        // =========================================================
+
         async function refreshTable() {
 
-            const btn = document.getElementById("btnRefresh");
-            const rangeInput = document.getElementById("rangeInput");
+            const btn =
+                document.getElementById("btnRefresh");
 
-            const dataRange = rangeInput.value.trim();
+            const rangeInput =
+                document.getElementById("rangeInput");
+
+
+            const dataRange =
+                rangeInput.value.trim();
+
 
             if (!dataRange) {
+
                 alert("Silakan masukkan range.");
+
                 rangeInput.focus();
+
                 return;
+
             }
 
+
             btn.disabled = true;
+
             btn.innerHTML = "⏳ Refreshing...";
+
 
             try {
 
@@ -150,93 +319,164 @@
                     dataRange
                 );
 
+
                 if (result.status === "success") {
 
-                    console.log("Range:", dataRange);
-                    console.log("Headers:", result.columnHeaders);
-                    console.log("Data:", result.data);
+                    console.log(
+                        "Range:",
+                        dataRange
+                    );
 
-                    // ==========================
+                    console.log(
+                        "Headers:",
+                        result.columnHeaders
+                    );
+
+                    console.log(
+                        "Column Types:",
+                        result.columnTypes
+                    );
+
+                    console.log(
+                        "Data:",
+                        result.data
+                    );
+
+
+                    // =================================================
                     // Buat ulang columns
-                    // ==========================
+                    // =================================================
 
-                    const columns = result.columnHeaders.map((header, index) => {
+                    const columns =
+                        createColumns(result);
 
-                        return {
-                            title: header,
-                            field: "col" + index,
-                            headerFilter: "input"
-                        };
 
-                    });
-
-                    // ==========================
+                    // =================================================
                     // Buat data object
-                    // ==========================
+                    // =================================================
 
-                    const tableData = result.data.map(row => {
+                    const tableData =
+                        createTableData(result.data);
 
-                        const obj = {};
 
-                        row.forEach((value, index) => {
-                            obj["col" + index] = value;
-                        });
+                    // =================================================
+                    // DEBUG
+                    // =================================================
 
-                        return obj;
+                    console.log(
+                        "INPUT RANGE:",
+                        dataRange
+                    );
 
-                    });
+                    console.log(
+                        "JUMLAH HEADER:",
+                        result.columnHeaders.length
+                    );
 
-                    // ==========================
+                    console.log(
+                        "HEADERS:",
+                        result.columnHeaders
+                    );
+
+                    console.log(
+                        "COLUMN TYPES:",
+                        result.columnTypes
+                    );
+
+                    console.log(
+                        "JUMLAH KOLOM DATA:",
+                        result.data[0]?.length
+                    );
+
+                    console.log(
+                        "DATA BARIS 1:",
+                        result.data[0]
+                    );
+
+
+                    // =================================================
                     // Update columns
-                    // ==========================
-                    console.log("INPUT RANGE :", dataRange);
-                    console.log("JUMLAH HEADER:", result.columnHeaders.length);
-                    console.log("HEADERS:", result.columnHeaders);
-                    console.log("JUMLAH KOLOM DATA:", result.data[0]?.length);
-                    console.log("DATA BARIS 1:", result.data[0]);
+                    // =================================================
 
                     await table.setColumns(columns);
 
-                    // ==========================
+
+                    // =================================================
                     // Update data
-                    // ==========================
+                    // =================================================
 
                     await table.replaceData(tableData);
 
+
                 } else {
 
-                    console.error("Gagal mengambil data:", result.error);
+                    console.error(
+                        "Gagal mengambil data:",
+                        result.error
+                    );
 
-                    alert("Gagal mengambil data: " + result.error);
+                    alert(
+                        "Gagal mengambil data: " +
+                        result.error
+                    );
+
                 }
+
 
             } catch (error) {
 
-                console.error("Refresh error:", error);
+                console.error(
+                    "Refresh error:",
+                    error
+                );
 
-                alert("Terjadi error saat refresh.");
+                alert(
+                    "Terjadi error saat refresh."
+                );
+
 
             } finally {
 
                 btn.disabled = false;
+
                 btn.innerHTML = "🔄 Refresh";
 
             }
+
         }
+
+
+        // =========================================================
+        // RUN
+        // =========================================================
 
         runClientExample();
 
     </script>
 
 
+    <!-- =========================================================
+         RANGE INPUT
+    ========================================================== -->
 
-    <label for="rangeInput">Range:</label>
+    <label for="rangeInput">
+        Range:
+    </label>
 
-    <input type="text" id="rangeInput" value="A2:C10" placeholder="Contoh: A2:C10">
+    <input
+        type="text"
+        id="rangeInput"
+        value="A2:C10"
+        placeholder="Contoh: A2:C10"
+    >
 
-    <button id="btnRefresh" onclick="refreshTable()">
+    <button
+        id="btnRefresh"
+        onclick="refreshTable()"
+    >
         🔄 Refresh
     </button>
+
 
 </body>
 
