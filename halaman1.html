@@ -106,7 +106,6 @@
             });
 
         } else {
-            
 
             console.error(
                 "Gagal mengambil data:",
@@ -116,7 +115,8 @@
         }
 
     }
- 
+
+
     async function refreshTable() {
 
         const result = await fetchGSheetData(
@@ -152,7 +152,7 @@
 
 </script>
 
-<button onclick="refreshTable()">🔄 Refresh</button>
+ 
 
 
 <button onclick="refreshTable()">🔄 Refresh</button>
