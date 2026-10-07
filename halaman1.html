@@ -26,15 +26,16 @@
   <div id="table"></div>
 
   <script>
-
-    async function runClientExample() {
-
-      const WEB_APP_URL =
+       const WEB_APP_URL =
         "https://script.google.com/macros/s/AKfycbxS25nr6J37T3EhgJPxS0X6XTJy4nnhsSp1HsG1SEGyEPASs70tMt010G13UXLDILnn/exec";
 
       const GSHEET_ID =
         "1dShkxc4N8wvekcJt8gP3XvFCqPPu6gcWdhy79YVOjmE";
 
+
+    async function runClientExample() {
+
+   
 
       // Ambil data dari Google Sheet
       const result = await fetchGSheetData(
