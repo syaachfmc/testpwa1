@@ -26,132 +26,135 @@
   <div id="table"></div>
 
   <script>
-       const WEB_APP_URL =
+
+    const WEB_APP_URL =
         "https://script.google.com/macros/s/AKfycbxS25nr6J37T3EhgJPxS0X6XTJy4nnhsSp1HsG1SEGyEPASs70tMt010G13UXLDILnn/exec";
 
-      const GSHEET_ID =
+    const GSHEET_ID =
         "1dShkxc4N8wvekcJt8gP3XvFCqPPu6gcWdhy79YVOjmE";
+
+    // Simpan instance Tabulator
+    let table;
 
 
     async function runClientExample() {
 
-   
-
-      // Ambil data dari Google Sheet
-      const result = await fetchGSheetData(
-        WEB_APP_URL,
-        GSHEET_ID,
-        "data",
-        1,
-        "A2:C10"
-      );
-
-
-      if (result.status === "success") {
-
-        console.log("Column Headers:", result.columnHeaders);
-        console.log("Raw Data Array:", result.data);
-
-        console.log("Data [0][0]:", result.get(0, 0));
-        console.log("Data [1][2]:", result.get(1, 2));
-
-
-        // ==========================================
-        // Ubah header Google Sheet menjadi column Tabulator
-        // ==========================================
-
-        const columns = result.columnHeaders.map((header, index) => {
-
-          return {
-            title: header,
-            field: "col" + index,
-            headerFilter: "input"
-          };
-
-        });
-
-
-        // ==========================================
-        // Ubah array Google Sheet menjadi object
-        // ==========================================
-
-        const tableData = result.data.map(row => {
-
-          const obj = {};
-
-          row.forEach((value, index) => {
-
-            obj["col" + index] = value;
-
-          });
-
-          return obj;
-
-        });
-
-
-        console.log("Tabulator Columns:", columns);
-        console.log("Tabulator Data:", tableData);
-
-
-        // ==========================================
-        // Buat Tabulator
-        // ==========================================
-
-        new Tabulator("#table", {
-
-          height: "400px",
-
-          layout: "fitDataStretch",
-
-          columns: columns,
-
-          data: tableData,
-
-          selectableRows: true,
-
-          pagination: false
-
-        });
-
-
-      } else {
-
-        console.error(
-          "Gagal mengambil data:",
-          result.error
+        const result = await fetchGSheetData(
+            WEB_APP_URL,
+            GSHEET_ID,
+            "data",
+            1,
+            "A2:C10"
         );
 
-      }
+        if (result.status === "success") {
+
+            console.log("Column Headers:", result.columnHeaders);
+            console.log("Raw Data Array:", result.data);
+
+            console.log("Data [0][0]:", result.get(0, 0));
+            console.log("Data [1][2]:", result.get(1, 2));
+
+
+            // ============================
+            // Column Tabulator
+            // ============================
+
+            const columns = result.columnHeaders.map((header, index) => {
+
+                return {
+                    title: header,
+                    field: "col" + index,
+                    headerFilter: "input"
+                };
+
+            });
+
+
+            // ============================
+            // Data Tabulator
+            // ============================
+
+            const tableData = result.data.map(row => {
+
+                const obj = {};
+
+                row.forEach((value, index) => {
+                    obj["col" + index] = value;
+                });
+
+                return obj;
+
+            });
+
+
+            // ============================
+            // Buat Tabulator
+            // ============================
+
+            table = new Tabulator("#table", {
+
+                height: "400px",
+                layout: "fitDataStretch",
+
+                columns: columns,
+                data: tableData,
+
+                selectableRows: true,
+                pagination: false
+
+            });
+
+        } else {
+            
+
+            console.error(
+                "Gagal mengambil data:",
+                result.error
+            );
+
+        }
 
     }
-
+ 
     async function refreshTable() {
-    const result = await fetchGSheetData(
-      WEB_APP_URL,
-      GSHEET_ID,
-      "data",
-      1,
-      "A2:C10"
-    );
-  
-    if (result.status === "success") {
-      const tableData = result.data.map(row => {
-        const obj = {};
-  
-        row.forEach((value, index) => {
-          obj["col" + index] = value;
-        });
-  
-        return obj;
-      });
-  
-      table.replaceData(tableData);
+
+        const result = await fetchGSheetData(
+            WEB_APP_URL,
+            GSHEET_ID,
+            "data",
+            1,
+            "A2:C10"
+        );
+
+        if (result.status === "success") {
+
+            const tableData = result.data.map(row => {
+
+                const obj = {};
+
+                row.forEach((value, index) => {
+                    obj["col" + index] = value;
+                });
+
+                return obj;
+
+            });
+
+            table.replaceData(tableData);
+
+        }
+
     }
-  }
+
+
     runClientExample();
 
-  </script>
+</script>
+
+<button onclick="refreshTable()">🔄 Refresh</button>
+
+
 <button onclick="refreshTable()">🔄 Refresh</button>
 
 </body>
